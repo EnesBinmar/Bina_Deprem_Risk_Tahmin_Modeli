@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Risk Analizi Sonucu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .result-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+        }
+        .score-circle.success {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            box-shadow: 0 20px 60px rgba(0, 184, 148, 0.4);
+        }
+        .score-circle.warning {
+            background: linear-gradient(135deg, #fdcb6e, #f39c12);
+            box-shadow: 0 20px 60px rgba(253, 203, 110, 0.4);
+        }
+        .score-circle.danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 20px 60px rgba(231, 76, 60, 0.4);
+        }
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .score-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .risk-badge {
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .risk-badge.success {
+            background: rgba(0, 184, 148, 0.3);
+            border: 2px solid #00b894;
+        }
+        .risk-badge.warning {
+            background: rgba(253, 203, 110, 0.3);
+            border: 2px solid #fdcb6e;
+        }
+        .risk-badge.danger {
+            background: rgba(231, 76, 60, 0.3);
+            border: 2px solid #e74c3c;
+        }
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .factor-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+        .factor-card.high {
+            border-color: #e74c3c;
+        }
+        .factor-card.medium {
+            border-color: #f39c12;
+        }
+        .factor-card.low {
+            border-color: #00b894;
+        }
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .fay-info {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.2), rgba(233, 69, 96, 0.1));
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <!-- Result Card -->
+                <div class="result-card p-4 p-md-5">
+                    
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h2 class="mb-4">
+                            <i class="fas fa-chart-pie me-2"></i>Risk Analizi Sonucu
+                        </h2>
+                        
+                        <!-- Score Circle -->
+                        <div class="score-circle {{ sonuc.renk }} mb-4 pulse">
+                            <div class="score-value">{{ sonuc.risk_skoru }}</div>
+                            <div class="score-label">Risk Skoru</div>
+                        </div>
+                        
+                        <!-- Risk Badge -->
+                        <div class="risk-badge {{ sonuc.renk }} mb-3">
+                            {{ sonuc.emoji }} {{ sonuc.kategori }}
+                        </div>
+                        
+                        <p class="lead opacity-75">{{ sonuc.aciklama }}</p>
+                    </div>
+
+                    <!-- Fay Uzaklığı Bilgisi -->
+                    <div class="fay-info mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <i class="fas fa-mountain fa-3x text-danger opacity-75"></i>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">🌋 Fay Hattına Uzaklık</h5>
+                                <div class="d-flex align-items-baseline">
+                                    <span class="display-6 fw-bold me-2">{{ sonuc.fay_uzakligi }}</span>
+                                    <span class="fs-5">km</span>
+                                </div>
+                                <small class="opacity-75">Doğu Anadolu Fay Hattı (DAFZ)</small>
+                            </div>
+                            <div class="col-auto">
+                                {% if sonuc.fay_uzakligi < 5 %}
+                                <span class="badge bg-danger fs-6">Çok Yakın</span>
+                                {% elif sonuc.fay_uzakligi < 10 %}
+                                <span class="badge bg-warning text-dark fs-6">Yakın</span>
+                                {% elif sonuc.fay_uzakligi < 15 %}
+                                <span class="badge bg-info fs-6">Orta</span>
+                                {% else %}
+                                <span class="badge bg-success fs-6">Uzak</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bina Detayları -->
+                    <div class="info-box mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-building me-2"></i>Bina Bilgileri
+                        </h5>
+                        <div class="detail-item">
+                            <span><i class="fas fa-map-marker-alt me-2 opacity-50"></i>İlçe</span>
+                            <span class="fw-bold">{{ sonuc.ilce }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span><i class="fas fa-map-pin me-2 opacity-50"></i>Mahalle</span>
+                            <span class="fw-bold">{{ sonuc.mahalle }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span><i class="fas fa-calendar me-2 opacity-50"></i>Bina Yaşı</span>
+                            <span class="fw-bold">{{ sonuc.bina_yasi }} yıl</span>
+                        </div>
+                        <div class="detail-item">
+                            <span><i class="fas fa-layer-group me-2 opacity-50"></i>Kat Sayısı</span>
+                            <span class="fw-bold">{{ sonuc.kat_sayisi }} kat</span>
+                        </div>
+                    </div>
+
+                    <!-- Risk Faktörleri -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Risk Faktörleri Analizi
+                        </h5>
+                        
+                        {% for faktor in sonuc.risk_faktorleri %}
+                        <div class="factor-card {{ faktor[2] }}">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if faktor[2] == 'high' %}
+                                    <i class="fas fa-times-circle text-danger fa-lg"></i>
+                                    {% elif faktor[2] == 'medium' %}
+                                    <i class="fas fa-exclamation-circle text-warning fa-lg"></i>
+                                    {% else %}
+                                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ faktor[0] }}</div>
+                                    <small class="opacity-75">{{ faktor[1] }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Öneriler -->
+                    <div class="info-box mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-lightbulb me-2"></i>Öneriler
+                        </h5>
+                        {% if sonuc.renk == 'danger' %}
+                        <ul class="mb-0">
+                            <li>Acil olarak bir yapı mühendisine danışın</li>
+                            <li>Bina güçlendirme seçeneklerini araştırın</li>
+                            <li>Deprem sigortanızı kontrol edin</li>
+                            <li>Acil durum çantası hazırlayın</li>
+                        </ul>
+                        {% elif sonuc.renk == 'warning' %}
+                        <ul class="mb-0">
+                            <li>Yapı mühendisi değerlendirmesi yaptırın</li>
+                            <li>Binada görünür çatlak varsa kontrol ettirin</li>
+                            <li>Deprem sigortanızı yenileyin</li>
+                            <li>Aile deprem planı oluşturun</li>
+                        </ul>
+                        {% else %}
+                        <ul class="mb-0">
+                            <li>Periyodik bina kontrollerini aksatmayın</li>
+                            <li>Deprem sigortanızı güncel tutun</li>
+                            <li>Acil durum planınızı gözden geçirin</li>
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="text-center">
+                        <a href="/" class="btn btn-back me-2">
+                            <i class="fas fa-arrow-left me-2"></i>Yeni Analiz
+                        </a>
+                        <button onclick="window.print()" class="btn btn-back">
+                            <i class="fas fa-print me-2"></i>Yazdır
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="text-center mt-4 opacity-75">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        Bu analiz istatistiksel bir tahmindir ve kesin sonuç vermez.
+                        <br>Profesyonel yapı değerlendirmesi için mutlaka uzman görüşü alınız.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
